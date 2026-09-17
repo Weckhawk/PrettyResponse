@@ -1,7 +1,5 @@
 # Laravel API Response Builder
 
-[![CI](https://github.com/Weckhawk/PrettyResponse/actions/workflows/ci.yml/badge.svg)](https://github.com/Weckhawk/PrettyResponse/actions/workflows/ci.yml)
-[![Validate package](https://github.com/Weckhawk/PrettyResponse/actions/workflows/validate.yml/badge.svg)](https://github.com/Weckhawk/PrettyResponse/actions/workflows/validate.yml)
 [![Packagist Version](https://img.shields.io/packagist/v/weckhawk/pretty-response)](https://packagist.org/packages/weckhawk/pretty-response)
 [![License](https://img.shields.io/packagist/l/weckhawk/pretty-response)](LICENSE)
 
