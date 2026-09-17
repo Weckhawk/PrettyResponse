@@ -23,67 +23,41 @@ class PrettyExceptionHandler
                 return null;
             }
 
-            if ($e instanceof HttpExceptionInterface) {
-                return ApiResponse::error(
-                    message: $e->getMessage() ?: 'An error occurred',
-                    statusCode: $e->getStatusCode(),
-                )->toJsonResponse();
-            }
-
-            return ApiResponse::serverError(
-                message: config('app.debug') ? $e->getMessage() : 'Internal server error',
-            )->toJsonResponse();
-        });
-
-        $handler->renderable(function (NotFoundHttpException $e, Request $request) {
-            if ($request->expectsJson()) {
-                return ApiResponse::notFound()->toJsonResponse();
-            }
-        });
-
-        $handler->renderable(function (MethodNotAllowedHttpException $e, Request $request) {
-            if ($request->expectsJson()) {
-                return ApiResponse::error(
-                    message: 'Method not allowed',
-                    statusCode: ApiResponse::HTTP_METHOD_NOT_ALLOWED,
-                )->toJsonResponse();
-            }
-        });
-
-        $handler->renderable(function (TooManyRequestsHttpException $e, Request $request) {
-            if ($request->expectsJson()) {
-                return ApiResponse::error(
-                    message: 'Too many requests',
-                    statusCode: ApiResponse::HTTP_TOO_MANY_REQUESTS,
-                )->toJsonResponse();
-            }
-        });
-
-        $handler->renderable(function (ValidationException $e, Request $request) {
-            if ($request->expectsJson()) {
-                return ApiResponse::validationError(
+            return match (true) {
+                $e instanceof ValidationException => ApiResponse::validationError(
                     errors: $e->errors(),
                     message: $e->getMessage(),
-                )->toJsonResponse();
-            }
-        });
+                )->toJsonResponse(),
 
-        $handler->renderable(function (ModelNotFoundException $e, Request $request) {
-            if ($request->expectsJson()) {
-                return ApiResponse::notFound()->toJsonResponse();
-            }
-        });
+                $e instanceof ModelNotFoundException => ApiResponse::notFound()->toJsonResponse(),
 
-        $handler->renderable(function (AuthenticationException $e, Request $request) {
-            if ($request->expectsJson()) {
-                return ApiResponse::unauthorized()->toJsonResponse();
-            }
-        });
+                $e instanceof AuthenticationException => ApiResponse::unauthorized()->toJsonResponse(),
 
-        $handler->renderable(function (AuthorizationException $e, Request $request) {
-            if ($request->expectsJson()) {
-                return ApiResponse::forbidden($e->getMessage() ?: 'Forbidden')->toJsonResponse();
-            }
+                $e instanceof AuthorizationException => ApiResponse::forbidden(
+                    $e->getMessage() ?: 'Forbidden',
+                )->toJsonResponse(),
+
+                $e instanceof NotFoundHttpException => ApiResponse::notFound()->toJsonResponse(),
+
+                $e instanceof MethodNotAllowedHttpException => ApiResponse::error(
+                    message: 'Method not allowed',
+                    statusCode: ApiResponse::HTTP_METHOD_NOT_ALLOWED,
+                )->toJsonResponse(),
+
+                $e instanceof TooManyRequestsHttpException => ApiResponse::error(
+                    message: 'Too many requests',
+                    statusCode: ApiResponse::HTTP_TOO_MANY_REQUESTS,
+                )->toJsonResponse(),
+
+                $e instanceof HttpExceptionInterface => ApiResponse::error(
+                    message: $e->getMessage() ?: 'An error occurred',
+                    statusCode: $e->getStatusCode(),
+                )->toJsonResponse(),
+
+                default => ApiResponse::serverError(
+                    message: config('app.debug') ? $e->getMessage() : 'Internal server error',
+                )->toJsonResponse(),
+            };
         });
     }
 }
